@@ -2,6 +2,8 @@
 
 Easy way to transfer files inside the local network!
 
+***Please keep in mind that this project is still in a beta phase as I still want to implement security features and make it available to remote sites.***
+
 ### Steps for use:
 
 1. When connecting to another device, please specify the correct `SERVER_IP` and `PORT` address located on lines 6 & 7 of the *cli.py* file.
