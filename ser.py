@@ -81,7 +81,7 @@ def sock():
 
 def main():
     try:
-        print("Press CTRL+C to exit, or wait for a clients response")
+        print("Press CTRL+C to exit, or wait for a client's response")
         sock()
     except Exception as e:
         print(f"ERROR: {e}")
