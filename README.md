@@ -2,7 +2,7 @@
 
 Easy way to transfer files inside the local network!
 
-***Please keep in mind that this project is still in a beta phase as I still want to implement security features and make it available to remote sites.***
+***This project is still a work in beta!!!***
 
 ### Steps for use:
 
