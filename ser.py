@@ -16,13 +16,9 @@ def checkname(cli_file_name, directory):
 
     return os.path.join(directory, filename)
 
-def receive_file(connection, directory):
+def receive_file(connection, directory, sock):
     while True:
         try:
-            # get the file SIZE
-
-
-
             size_buffer = b""
             while b"\n" not in size_buffer:
                 size_buffer += connection.recv(1)
@@ -34,9 +30,7 @@ def receive_file(connection, directory):
             cli_file_name = cli_file_name_buffer.decode().strip()
             cli_file_name = os.path.basename(cli_file_name)
 
-
             file_location = checkname(cli_file_name, directory)
-
 
             received = 0
 
@@ -48,7 +42,6 @@ def receive_file(connection, directory):
                     f.write(chunk)
                     received += len(chunk)
 
-
             print(f"Saved {cli_file_name} as {file_location}")
         except KeyboardInterrupt:
             print("\nProgram ended by user")
@@ -56,12 +49,15 @@ def receive_file(connection, directory):
         except Exception as e:
             print(f"ERROR: {e}")
 
-def sock():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.bind((HOST, PORT))
-        sock.listen(1)
-        sock.settimeout(120)
-        try:
+
+def main():
+    try:
+        print("Press CTRL+C to exit, or wait for a client's response")
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(15)
+            sock.bind((HOST, PORT))
+            sock.listen(1)
+
             connection, address = sock.accept()
             with connection:
                 confirmation_buffer = b""
@@ -69,20 +65,22 @@ def sock():
                     confirmation_buffer += connection.recv(1)
                 connection.sendall(confirmation_buffer)
 
-                directory = input("Specify the directory to save each file: ")
-                os.makedirs(directory, exist_ok=True)
+                for i in range(3):
+                    try:
+                        directory = input("Specify the directory to save each file: ").strip()
+                        os.makedirs(directory, exist_ok=True)
+                        break
+                    except FileNotFoundError:
+                        if i == 2:
+                            print("Three attempts tried.")
+                            return
+                        else:
+                            print("Please specify a valid file")
 
-                receive_file(connection, directory)
+                receive_file(connection, directory, sock)
 
-        except socket.timeout:
-            print("socket timeout")
-        except Exception as e:
-            print(f"Server Error: {e}")
-
-def main():
-    try:
-        print("Press CTRL+C to exit, or wait for a client's response")
-        sock()
+    except socket.timeout:
+        print("Socket timeout!!!\nMore than 15 seconds have passed by.")
     except Exception as e:
         print(f"ERROR: {e}")
 

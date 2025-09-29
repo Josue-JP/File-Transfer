@@ -9,7 +9,7 @@ PORT = 12345              # The same port as used by the server
 args = sys.argv
 
 
-def check(text, s):
+def check(text):
     user_input = input(text)
     if user_input.lower() == "q":
         print("Quitting")
@@ -20,13 +20,13 @@ def check(text, s):
 def send_file(s):
     while True:
         try:
-            file_location = check("Specify the file to send: ", s)
+            file_location = check("Specify the file to send: ")
             if os.path.isfile(file_location):
                 with open(file_location, "rb") as f:
                     file_contents = f.read()
 
-                filename = os.path.basename(file_location)
                 filesize = len(file_contents)
+                filename = os.path.basename(file_location) # gets the name of the file without the full path
 
                 s.sendall(f"{filesize}\n".encode())
                 s.sendall(f"{filename}\n".encode())
@@ -44,40 +44,25 @@ def send_file(s):
             print(f"ERROR: {e}")
 
 
-def sock():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((SERVER_IP, PORT))
-        message = f"Connected to {SERVER_IP}:{PORT}\t".encode()
-        try:
+def main():
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(15)
+            s.connect((SERVER_IP, PORT))
+            message = f"Connected to {SERVER_IP}:{PORT}\t".encode()
             s.sendall(message)
             data = s.recv(1024)
             print(data.decode())
-        except BrokenPipeError:
-            print("Server has closed the connection!!!")
-            return
-        send_file(s)
+            send_file(s)
 
+    except (BrokenPipeError, ConnectionResetError):
+        print("Server has closed the connection!!!")
 
-def parse_repeat_arg():
-    repeat_count = 1
-    if len(args) > 2 and args[1] == "-r":
-        try:
-           repeat_count = int(args[2])
-        except ValueError:
-           print(f"Error: The -r option requires a number associatied with it\nExample: {args[0]} -r 3")
-           sys.exit(1)
+    except socket.timeout:
+        print("Socket timeout!!!")
 
-    elif len(args) > 1 and args[1] != "-r":
-           print(f"Unkown option: {args[1]}")
-           sys.exit(1)
-
-    return repeat_count
-
-def main():
-    global repeat
-    repeat = parse_repeat_arg()
-    sock()
-
+    except ConnectionRefusedError:
+        print("Refused Connection!!!\nCheck if ser.py is running on the server machine.")
 
 
 if __name__ == "__main__":
