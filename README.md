@@ -1,13 +1,13 @@
 # File-Transfer
 
-Easy way to transfer files inside the local network!
+An easy way to transfer files inside the local network!
 
 ***This project is still a work in beta!!!***
 
 ### Steps for use:
 
 1. When connecting to another device, please specify the correct `SERVER_IP` and `PORT` address located on lines 6 & 7 of the *cli.py* file.
-2. Now start the **ser.py** file on the device that will receive the files — i.e., the server device.
+2. Now start the **ser.py** file on the device that will receive the files - i.e., the server device.
 3. After the receiving device initiates the connection, start the **cli.py** file on the client host that will send the files.
 
 ### Examples
