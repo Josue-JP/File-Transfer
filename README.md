@@ -14,14 +14,14 @@ An easy way to transfer files inside the local network!
 
 Client's perspective using the *cli.py* file:
 
-```bash
+```
 Connected to 127.0.0.1:12345
 Specify the file to send: text.txt
 ```
 
 Server's perspective using the *ser.py* file:
 
-```bash
+```
 Press CTRL+C to exit, or wait for a client's response
 Specify the directory to save each file: test
 Saved text.txt as test/text.txt
