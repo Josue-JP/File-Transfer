@@ -42,7 +42,7 @@ def send_file(s, file_location):
 
 
 def main():
-    path = input("Enter the directory/path you want to send.")
+    path = input("Enter the directory/path you want to send: ")
     files = []
     for i in os.listdir(path):
         full_path = os.path.join(path, i)
