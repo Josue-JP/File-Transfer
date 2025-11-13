@@ -58,7 +58,10 @@ def main():
             sock.bind((HOST, PORT))
             sock.listen(1)
 
-            connection, address = sock.accept()
+            try:
+                connection, address = sock.accept()
+            except KeyboardInterrupt:
+                raise KeyboardInterrupt
             with connection:
                 confirmation_buffer = b""
                 while b"\t" not in confirmation_buffer:
@@ -81,6 +84,8 @@ def main():
 
     except socket.timeout:
         print("Socket timeout!!!\nMore than 15 seconds have passed by.")
+    except KeyboardInterrupt:
+        print("\nProgram ended by user")
     except Exception as e:
         print(f"ERROR: {e}")
 
