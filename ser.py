@@ -22,6 +22,8 @@ def receive_file(connection, directory, sock):
             size_buffer = b""
             while b"\n" not in size_buffer:
                 size_buffer += connection.recv(1)
+            if size_buffer == b"END_CONNECTION\n":
+                break
             filesize = int(size_buffer.decode().strip())
 
             cli_file_name_buffer = b""
@@ -68,17 +70,8 @@ def main():
                     confirmation_buffer += connection.recv(1)
                 connection.sendall(confirmation_buffer)
 
-                for i in range(3):
-                    try:
-                        directory = input("Specify the directory to save each file: ").strip()
-                        os.makedirs(directory, exist_ok=True)
-                        break
-                    except FileNotFoundError:
-                        if i == 2:
-                            print("Three attempts tried.")
-                            return
-                        else:
-                            print("Please specify a valid file")
+                directory = input("Specify the directory to save each file: ").strip()
+                os.makedirs(directory, exist_ok=True)
 
                 receive_file(connection, directory, sock)
 
