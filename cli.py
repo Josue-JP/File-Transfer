@@ -8,15 +8,16 @@ PORT = 12345              # The same port as used by the server
 
 args = sys.argv
 
-def check(text):
+def check(text, s):
     user_input = input(text)
     if user_input.lower() == "q":
         print("Quitting")
-        sys.exit()
+        s.sendall("END_CONNECTION\n".encode())
+        exit()
     return user_input
 
-def get_directory():
-    path = check("Enter the directory/path you want to send: ")
+def get_directory(s):
+    path = check("Enter the directory/path you want to send: ", s)
     files = []
     message_sent = False
     for i in os.listdir(path):
@@ -53,7 +54,7 @@ def send_file(s, file_location = None):
         if file_location == None:
             failed_attempts = 0
             while True:
-                file_location = check("Specify the file to send: ")
+                file_location = check("Specify the file to send: ", s)
                 return_value = send_info(s, file_location)
 
                 if return_value == 1:
@@ -91,7 +92,7 @@ def main():
             if len(args) == 1:
                 send_file(s)
             elif args[1] == "-d":
-                files = get_directory()
+                files = get_directory(s)
                 send_file(s, files)
             else:
                 raise ValueError("INVALID ARGUMENT")

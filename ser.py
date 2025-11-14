@@ -48,6 +48,8 @@ def receive_file(connection, directory, sock):
         except KeyboardInterrupt:
             print("\nProgram ended by user")
             break
+        except socket.timeout:
+            raise socket.timeout
         except Exception as e:
             print(f"ERROR: {e}")
 
@@ -56,12 +58,14 @@ def main():
     try:
         print("Press CTRL+C to exit, or wait for a client's response")
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             sock.settimeout(15)
             sock.bind((HOST, PORT))
             sock.listen(1)
 
             try:
                 connection, address = sock.accept()
+                connection.settimeout(15)
             except KeyboardInterrupt:
                 raise KeyboardInterrupt
             with connection:
@@ -77,6 +81,7 @@ def main():
 
     except socket.timeout:
         print("Socket timeout!!!\nMore than 15 seconds have passed by.")
+        connection.sendall(b"END_CONNECTION\n")
     except KeyboardInterrupt:
         print("\nProgram ended by user")
     except Exception as e:
