@@ -23,6 +23,7 @@ def receive_file(connection, directory, sock):
             while b"\n" not in size_buffer:
                 size_buffer += connection.recv(1)
             if size_buffer == b"END_CONNECTION\n":
+                print("Client has ended connection!!!")
                 break
             filesize = int(size_buffer.decode().strip())
 
@@ -81,7 +82,6 @@ def main():
 
     except socket.timeout:
         print("Socket timeout!!!\nMore than 15 seconds have passed by.")
-        connection.sendall(b"END_CONNECTION\n")
     except KeyboardInterrupt:
         print("\nProgram ended by user")
     except Exception as e:

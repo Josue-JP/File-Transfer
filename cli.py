@@ -75,6 +75,7 @@ def send_file(s, file_location = None):
         s.sendall("END_CONNECTION\n".encode())
     except BrokenPipeError:
         print("Server has closed the connection!!!")
+        print(f"{file_location} was not saved!!!")
     except Exception as e:
         print(f"ERROR: {e}")
 
