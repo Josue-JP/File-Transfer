@@ -83,7 +83,7 @@ def get_msg(fern_obj, connection):
     try:
         return fern_obj.decrypt(buffer)
     except: 
-        print(f"The key inside {key_file} cannot decrypt the clients messages")
+        print(f"!!!The clients key is not compatible with the servers key!!!")
         exit()
 
 

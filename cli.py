@@ -3,7 +3,7 @@ import os
 import sys
 from cryptography.fernet import Fernet # imports Fernet (symmetric encryption)
 
-SERVER_IP = '127.0.0.1'    # The remote host
+SERVER_IP = '10.0.0.226'    # The remote host
 PORT = 12345              # The same port as used by the server
 key_file = "key.ky"
 
@@ -93,11 +93,12 @@ def main():
             key = file.read()
             fern_obj = Fernet(key)
     except ValueError:
-        print(f"The key in {key_file} is not in a safe Fernet compatible format.\nConsider retrieving the correct key")
+        print(f"!!!The key in {key_file} is not in a safe Fernet compatible format.\nConsider retrieving the correct key!!!")
         exit()
 
 
     try:
+        print("Attempting a connection to the server...")
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(15)
             s.connect((SERVER_IP, PORT))
@@ -106,9 +107,10 @@ def main():
             data = s.recv(1024)
             try:
                 decrypted_txt = fern_obj.decrypt(data)
+                print(decrypted_txt.decode())
             except:
-                print(f"The key inside {key_file} does not match the servers key")
-            print(decrypted_txt.decode())
+                print(f"The key inside {key_file} does not match the servers key.")
+                exit()
 
             if len(args) == 1:
                 send_file(s, fern_obj)
