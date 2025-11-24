@@ -104,7 +104,10 @@ def main():
             encrypted_txt = fern_obj.encrypt(f"Connected to {SERVER_IP}:{PORT}".encode())
             s.sendall(encrypted_txt + b'\n')
             data = s.recv(1024)
-            decrypted_txt = fern_obj.decrypt(data)
+            try:
+                decrypted_txt = fern_obj.decrypt(data)
+            except:
+                print(f"The key inside {key_file} does not match the servers key")
             print(decrypted_txt.decode())
 
             if len(args) == 1:

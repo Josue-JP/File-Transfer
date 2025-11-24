@@ -80,7 +80,11 @@ def get_msg(fern_obj, connection):
     while b"\n" not in buffer:
         buffer += connection.recv(1)
     buffer = buffer.decode().strip('\n')
-    return fern_obj.decrypt(buffer)
+    try:
+        return fern_obj.decrypt(buffer)
+    except: 
+        print(f"The key inside {key_file} cannot decrypt the clients messages")
+        exit()
 
 
 def main():
