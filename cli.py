@@ -109,7 +109,7 @@ def main():
                 decrypted_txt = fern_obj.decrypt(data)
                 print(decrypted_txt.decode())
             except:
-                print(f"The key inside {key_file} does not match the servers key.")
+                print(f"!!!The key inside {key_file} does not match the servers key!!!")
                 exit()
 
             if len(args) == 1:
