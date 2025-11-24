@@ -1,23 +1,26 @@
-# s = client_socket
 import socket
 import os
 import sys
+from cryptography.fernet import Fernet # imports Fernet (symmetric encryption)
 
 SERVER_IP = '127.0.0.1'    # The remote host
 PORT = 12345              # The same port as used by the server
+key_file = "key.ky"
 
 args = sys.argv
 
-def check(text, s):
+
+
+def check(text, s, fern_obj):
     user_input = input(text)
     if user_input.lower() == "q":
         print("Quitting")
-        s.sendall("END_CONNECTION\n".encode())
+        s.sendall(encrypt_text("END_CONNECTION", fern_obj) + b'\n')
         exit()
     return user_input
 
-def get_directory(s):
-    path = check("Enter the directory/path you want to send: ", s)
+def get_directory(s, fern_obj):
+    path = check("Enter the directory/path you want to send: ", s, fern_obj)
     files = []
     message_sent = False
     for i in os.listdir(path):
@@ -31,31 +34,35 @@ def get_directory(s):
 
     return files
 
-def send_info(s, file_location):
+def encrypt_text(txt, fern_obj):
+    return fern_obj.encrypt(str(txt).encode())
+
+def send_info(s, file_location, fern_obj):
     if os.path.isfile(file_location):
         with open(file_location, "rb") as f:
             file_contents = f.read()
 
-        filesize = len(file_contents)
-        filename = os.path.basename(file_location) # gets the name of the file without the full path
+        f_conts_encrypted = fern_obj.encrypt(file_contents)
 
-        s.sendall(f"{filesize}\n".encode())
-        s.sendall(f"{filename}\n".encode())
-        s.sendall(file_contents)
-        return 0
+        filesize = len(f_conts_encrypted)
+        filename = os.path.basename(file_location) # gets the name of the file without the full path
+        s.sendall(encrypt_text(filesize, fern_obj) + b'\n')
+        s.sendall(encrypt_text(filename, fern_obj) + b'\n')
+        s.sendall(f_conts_encrypted)
+        return 0  
 
     else:
         print("INVALID FILE_LOCATION")
         return 1
 
 
-def send_file(s, file_location = None):
+def send_file(s, fern_obj, file_location = None):
     try:
         if file_location == None:
             failed_attempts = 0
             while True:
-                file_location = check("Specify the file to send: ", s)
-                return_value = send_info(s, file_location)
+                file_location = check("Specify the file to send: ", s, fern_obj)
+                return_value = send_info(s, file_location, fern_obj)
 
                 if return_value == 1:
                     failed_attempts += 1
@@ -68,11 +75,11 @@ def send_file(s, file_location = None):
 
         elif type(file_location) == list:
             for i in file_location:
-                send_info(s, i)
+                send_info(s, i, fern_obj)
 
     except KeyboardInterrupt:
         print("Program ended by user")
-        s.sendall("END_CONNECTION\n".encode())
+        s.sendall(encrypt_text("END_CONNECTION", fern_obj) + b'\n')
     except BrokenPipeError:
         print("Server has closed the connection!!!")
         print(f"{file_location} was not saved!!!")
@@ -82,19 +89,29 @@ def send_file(s, file_location = None):
 
 def main():
     try:
+        with open(key_file, "rb") as file:
+            key = file.read()
+            fern_obj = Fernet(key)
+    except ValueError:
+        print(f"The key in {key_file} is not in a safe Fernet compatible format.\nConsider retrieving the correct key")
+        exit()
+
+
+    try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(15)
             s.connect((SERVER_IP, PORT))
-            message = f"Connected to {SERVER_IP}:{PORT}\t".encode()
-            s.sendall(message)
+            encrypted_txt = fern_obj.encrypt(f"Connected to {SERVER_IP}:{PORT}".encode())
+            s.sendall(encrypted_txt + b'\n')
             data = s.recv(1024)
-            print(data.decode())
+            decrypted_txt = fern_obj.decrypt(data)
+            print(decrypted_txt.decode())
 
             if len(args) == 1:
-                send_file(s)
+                send_file(s, fern_obj)
             elif args[1] == "-d":
-                files = get_directory(s)
-                send_file(s, files)
+                files = get_directory(s, fern_obj)
+                send_file(s, fern_obj, files)
             else:
                 raise ValueError("INVALID ARGUMENT")
             
