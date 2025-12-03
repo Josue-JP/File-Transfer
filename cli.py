@@ -3,7 +3,7 @@ import os
 import sys
 from cryptography.fernet import Fernet # imports Fernet (symmetric encryption)
 
-SERVER_IP = '10.0.0.226'    # The remote host
+SERVER_IP = '127.0.0.1'    # The remote host
 PORT = 12345              # The same port as used by the server
 key_file = "key.ky"
 
