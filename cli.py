@@ -71,6 +71,7 @@ def send_file(s, fern_obj, file_location = None):
                     
                 if failed_attempts == 3:
                     print("Three attepts tried.")
+                    s.sendall(encrypt_text("END_CONNECTION", fern_obj) + b'\n')
                     return
 
         elif type(file_location) == list:

@@ -62,6 +62,9 @@ def receive_file(connection, directory, sock, fern_obj):
             if size_buffer == b"END_CONNECTION":
                 print("Client has ended connection!!!")
                 break
+            else:
+                print("Client has not sent a valid number for the filesize")
+                break
 
 
 def get_key(): 
