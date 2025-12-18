@@ -2,6 +2,7 @@ import socket
 import os
 import sys
 import ssl
+sys.path.insert(0, "./third_party")
 from inputimeout import inputimeout, TimeoutOccurred
 
 HOST = ''
