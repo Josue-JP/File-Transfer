@@ -1,7 +1,7 @@
-# s = client_socket
 import socket
 import os
 import sys
+import ssl
 
 SERVER_IP = '127.0.0.1'    # The remote host
 PORT = 12345              # The same port as used by the server
@@ -64,6 +64,7 @@ def send_file(s, file_location = None):
                     
                 if failed_attempts == 3:
                     print("Three attepts tried.")
+                    s.sendall("END_CONNECTION\n".encode())
                     return
 
         elif type(file_location) == list:
@@ -73,30 +74,32 @@ def send_file(s, file_location = None):
     except KeyboardInterrupt:
         print("Program ended by user")
         s.sendall("END_CONNECTION\n".encode())
-    except BrokenPipeError:
+    except (BrokenPipeError, ssl.SSLEOFError):
         print("Server has closed the connection!!!")
         print(f"{file_location} was not saved!!!")
-    except Exception as e:
-        print(f"ERROR: {e}")
+
 
 
 def main():
+    print("Attempting a connection to the server...")
     try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(15)
-            s.connect((SERVER_IP, PORT))
-            message = f"Connected to {SERVER_IP}:{PORT}\t".encode()
-            s.sendall(message)
-            data = s.recv(1024)
-            print(data.decode())
+        with socket.create_connection((SERVER_IP, PORT), timeout=20) as s: # defaults to a TCP connection that can use IPv4 or IPv6. ALso enables a 20 second limit before the connnection is terminated.
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT) # confirms this device is the client
+            context.load_verify_locations('tls_info/certificate.pem')
 
-            if len(args) == 1:
-                send_file(s)
-            elif args[1] == "-d":
-                files = get_directory(s)
-                send_file(s, files)
-            else:
-                raise ValueError("INVALID ARGUMENT")
+            with context.wrap_socket(s, server_hostname=SERVER_IP) as stls:
+                message = f"Connected to {SERVER_IP}:{PORT}\t".encode()
+                stls.sendall(message)
+                data = stls.recv(1024)
+                print(data.decode())
+
+                if len(args) == 1:
+                    send_file(stls)
+                elif args[1] == "-d":
+                    files = get_directory(stls)
+                    send_file(stls, files)
+                else:
+                    raise ValueError("INVALID ARGUMENT")
             
 
     except (BrokenPipeError, ConnectionResetError):
