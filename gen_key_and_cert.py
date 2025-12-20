@@ -14,7 +14,7 @@ ORGANIZATION_NAME = "Random Comapny"
 COMMON_NAME = "Socket Server"
 
 SAN_DNS_NAMES = ["localhost"]
-SAN_IP_ADDRESSES = ["127.0.0.1"]
+SAN_IP_ADDRESSES = ["127.0.0.1", "100.79.213.1", "100.82.253.38"]
 
 key = rsa.generate_private_key(
     public_exponent=65537,
@@ -23,7 +23,7 @@ key = rsa.generate_private_key(
 #print(key) == PRIVATE KEY
 #print(key.public_key()) == PUBLIC KEY
 # Write our key to disk for safe keeping
-with open("key.pem", "wb") as f:
+with open("tls_info/key.pem", "wb") as f:
     f.write(key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.TraditionalOpenSSL,
@@ -66,6 +66,6 @@ cert = x509.CertificateBuilder().subject_name(
     critical=False,
 # Sign our certificate with our private key
 ).sign(key, hashes.SHA256())
-with open("certificate.pem", "wb") as f:
+with open("tls_info/certificate.pem", "wb") as f:
     f.write(cert.public_bytes(serialization.Encoding.PEM))
 
